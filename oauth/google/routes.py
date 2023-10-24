@@ -9,7 +9,8 @@ from pip._vendor import cachecontrol
 import google.auth.transport.requests
 from oauth import db
 from oauth.models.users import Users
-from oauth.utils import login_is_required
+from oauth.utils import login_is_required, generate_verification_token, verify_verification_token
+
 
 GOOGLE_CLIENT_ID = App_Config.GOOGLE_CLIENT_ID
 client_secrets_file = os.path.join(pathlib.Path(__file__).parent, 'client_secret.json')
@@ -50,7 +51,7 @@ def callback():
         request=token_request,
         audience=GOOGLE_CLIENT_ID
     )
-
+    
     # Check if 'google_id', 'name', and 'email' are available in id_info
     if all(key in id_info for key in ['sub', 'name', 'email']):
         # Set session values
@@ -60,33 +61,25 @@ def callback():
 
         # Check if the user already exists in the database
         user = Users.query.filter_by(google_id=session['google_id']).first()
-        if user:
-            return jsonify({"user": user.name})
 
-        # Create a new user
-        new_user = Users(google_id=session['google_id'], name=session['name'], email=session['email'])
-        db.session.add(new_user)
-        db.session.commit()
+        if user is None:
+            # Create a new user
+            new_user = Users(google_id=session['google_id'], name=session['name'], email=session['email'])
+            db.session.add(new_user)
+            db.session.commit()
 
         session['profile'] = id_info.get('profile')
+        
+        # Generate a JWT token and store it in the user's session
+        jwt_token = generate_verification_token(user.id)
+        session['jwt_token'] = jwt_token
+        
+        return redirect(url_for('google.protected_area'))
     else:
         return jsonify({"Error": "Google user information not available"})
 
-    return redirect(url_for('google.protected_area'))
-
 @auth.route("/logout")
 def logout():
-    # Get the user based on their session data, or use the user ID stored in the session
-    user_id = session.get("user_id")
-
-    if user_id:
-        # Mark the user's token as revoked in the database
-        user = Users.query.filter_by(id=user_id).first()
-        if user:
-            user.token = None  # You can set it to None or delete it, depending on your design.
-
-        db.session.commit()
-
     # Clear the session data
     session.clear()
 
@@ -101,5 +94,6 @@ def index():
 
 @login_is_required
 @auth.route("/protected_area")
-def protected_area():
-    return f"Hello {session.get('name')}, your email address is: {session.get('email')}! <br/> <a href='{url_for('google.logout')}'><button>Logout</button></a>"
+def protected_area(user=None):
+    jwt_token = session.get('jwt_token')
+    return f"Hello {user.name}, your email address is: {user.email}! JWT Token: {jwt_token}<br><a href='{url_for('google.logout')}'><button>Logout</button></a>"
