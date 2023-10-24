@@ -18,10 +18,10 @@ client_secrets_file = os.path.join(pathlib.Path(__file__).parent, 'client_secret
 flow = Flow.from_client_secrets_file(
     client_secrets_file=client_secrets_file,
     scopes=["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"],
-    redirect_uri="http://127.0.0.1:5000/api/oauth/callback"
+    redirect_uri="http://127.0.0.1:5000/api/google/callback"
 )
 
-auth = Blueprint('google', __name__, url_prefix='/api/oauth')
+auth = Blueprint('google', __name__, url_prefix='/api/google')
 
 @auth.route("/login")
 def login():
