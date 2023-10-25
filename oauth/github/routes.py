@@ -9,8 +9,20 @@ from oauth.utils import generate_verification_token
 github_bp = make_github_blueprint(client_id=App_Config.GITHUB_OAUTH_CLIENT_ID,
                                   client_secret=App_Config.GITHUB_OAUTH_CLIENT_SECRET)
 
-@github_bp.route('/') 
+@github_bp.route('/')
 def github_login():
+    """
+    Allow users to log in via GitHub OAuth.
+    If the user is authorized, their GitHub details (name and email) are saved to the database.
+    Responses:
+        200:
+            - Success: New user created (if the user is successfully authenticated and added to the database).
+        401:
+            - Error: GitHub account not found (if the GitHub account could not be authenticated).
+    Returns:
+        - A JSON response indicating success or failure.
+        - If successful, a new user is created, or the user is authenticated and logged in.
+    """
     if not github.authorized:
         return redirect(url_for('github.login'))
     else:
@@ -26,4 +38,4 @@ def github_login():
             jwt_token = generate_verification_token(user.id)
             session['jwt_token'] = jwt_token
         return redirect(url_for('google.protected_area'))
-    return '<h1>Request failed!</h1>'
+    return ({"Error": "User not authorised"}), 401

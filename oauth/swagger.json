@@ -1,0 +1,163 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Swagger  - OpenAPI 3.0",
+    "description": "Allow new users to be authenticated using either google, github or twitter. Then store the user information in mysql databases. No need to remember multiple passwords",
+    "termsOfService": "http://swagger.io/terms/",
+    "contact": {
+      "email": "gachenge1@gmail.com"
+    },
+    "license": {
+      "name": "MIT License",
+      "url": "https://opensource.org/licenses/MIT"
+    },
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/google/login": {
+      "get": {
+        "summary": "Login with Google",
+        "description": "Redirects to Google login.",
+        "responses": {
+          "302": {
+            "description": "Redirect to Google login page"
+          }
+        }
+      }
+    },
+    "/api/google/callback": {
+      "get": {
+        "summary": "Google Callback",
+        "description": "Callback to process Google authorization.",
+        "responses": {
+          "302": {
+            "description": "Redirect to protected area"
+          },
+          "500": {
+            "description": "State does not match"
+          }
+        }
+      }
+    },
+    "/api/google/logout": {
+      "get": {
+        "summary": "Logout",
+        "description": "Clears the session data.",
+        "responses": {
+          "302": {
+            "description": "Redirect to the index"
+          }
+        }
+      }
+    },
+    "/api/google": {
+      "get": {
+        "summary": "Index",
+        "description": "Displays available login options.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/google/protected_area": {
+      "get": {
+        "summary": "Protected Area",
+        "description": "Requires login, displays protected content.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/github": {
+      "get": {
+        "summary": "Login with GitHub",
+        "description": "Redirects to GitHub login.",
+        "responses": {
+          "302": {
+            "description": "Redirect to GitHub login page"
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Base": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "32b3a275-fd39-4c70-a777-5fbcca050426"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-10-26T15:30:45Z"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-10-26T15:30:45Z"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "32b3a275-fd39-4c70-a777-5fbcca050426"
+          },
+          "account_id": {
+            "type": "integer",
+            "format": "integer",
+            "example": 12345678
+          },
+          "name": {
+            "type": "string",
+            "format": "string",
+            "example": "John"
+          },
+          "email": {
+            "type": "string",
+            "format": "string",
+            "example": "john@example.com"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "strftime('%Y-%m-%d %H:%M:%S')",
+            "example": "2023-10-26T15:30:45.000Z"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "strftime('%Y-%m-%d %H:%M:%S')",
+            "example": "2023-10-26T15:30:45.000Z"
+          }
+        }
+      }
+    }
+  }
+}

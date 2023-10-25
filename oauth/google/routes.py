@@ -12,6 +12,7 @@ from oauth.models.users import Users
 from oauth.utils import login_is_required, generate_verification_token, verify_verification_token
 
 
+
 GOOGLE_CLIENT_ID = App_Config.GOOGLE_CLIENT_ID
 client_secrets_file = os.path.join(pathlib.Path(__file__).parent, 'client_secret.json')
 
@@ -25,14 +26,23 @@ auth = Blueprint('google', __name__, url_prefix='/api/google')
 
 @auth.route("/login")
 def login():
-    """Login function to allow the user to log in."""
+    """Login function to allow the user to log in using Google OAuth.
+    Redirects the user to Google's login page to authenticate.
+    Returns:
+        Redirects the user to Google's login page for authentication.
+    """
     authorization_url, state = flow.authorization_url()
     session["state"] = state
     return redirect(authorization_url)
 
 @auth.route("/callback")
 def callback():
-    """Function to accept authorization token and details from Google."""
+    """Function to accept authorization token and details from Google.
+    This function handles the callback from Google OAuth. It verifies the authorization token and extracts user details.
+    Returns:
+        - If successful, redirects to the protected area.
+        - If unsuccessful, returns a JSON response with an error message.
+    """
     # Check if the state matches
     if session.get("state") != request.args.get("state"):
         abort(500)  # State does not match!
@@ -81,6 +91,11 @@ def callback():
 
 @auth.route("/logout")
 def logout():
+    """Logout the user by clearing the session data.
+    Clears the user's session data, including the JWT token, to log the user out.
+    Returns:
+        Redirects the user to the index page after logging out.
+    """
     # Clear the session data
     session.pop('jwt_token', None)
 
@@ -89,6 +104,11 @@ def logout():
 
 @auth.route("/")
 def index():
+    """Render the index page with login options.
+    Displays buttons to log in with Google and GitHub and access the protected area.
+    Returns:
+        HTML page with login options.
+    """
     google_link = f"<a href='{url_for('google.login')}'><button>Login with google</button></a>"
     github_link = f"<a href='{url_for('github.github_login')}'><button>Login with github</button></a>"
     protected_link = f"<a href='{url_for('google.protected_area')}'><button>Protected</button></a>"
@@ -97,6 +117,12 @@ def index():
 @login_is_required
 @auth.route("/protected_area")
 def protected_area():
+    """Protected area accessible to logged-in users.
+    Displays the protected area with the user's name and email. Allows the user to log out.
+    Returns:
+        - If the user is logged in, displays user details and a logout button.
+        - If the user is not logged in, returns a JSON response with an error message.
+    """
     jwt_token = session.get('jwt_token')
     if jwt_token:
         user_id = verify_verification_token(jwt_token)

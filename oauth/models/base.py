@@ -13,3 +13,18 @@ class Basemodel(db.Model):
     id = db.Column(db.String(60), primary_key=True, default=get_uuid, unique=True, nullable=False)
     created_at = db.Column(db.DateTime(), default=datetime.utcnow)
     updated_at = db.Column(db.DateTime(), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __init__(self, id, created_at, updated_at):
+        self.id = id
+        self.created_at = created_at
+        self.updated_at = updated_at
+        
+    @property
+    def formatted_created_at(self):
+        # Format the timestamp when accessed
+        return self.created_at.strftime('%Y-%m-%d %H:%M:%S')
+    
+    @property
+    def formatted_updated_at(self):
+        # Format the timestamp when accessed
+        return self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
