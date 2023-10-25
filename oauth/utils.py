@@ -9,19 +9,19 @@ def login_is_required(function):
     @wraps(function)
     def decorated_function(*args, **kwargs):
         jwt_token = session.get('jwt_token')
-        print(jwt_token)
-        if jwt_token is None:
-            return jsonify({'message': 'You are not logged in'}), 401
-
-        user_id = verify_verification_token(jwt_token)
-        if user_id is not None:
-            user = Users.query.get(user_id)
-            if user is not None:
-                return function(user, *args, **kwargs)
-
-        return jsonify({'message': 'Invalid token or user not found'}), 401
-
-    return decorated_function
+        if jwt_token:
+            try:
+                user_id = verify_verification_token(jwt_token)
+                return function(user_id, *args, **kwargs)
+            except jwt.ExpiredSignatureError:
+                return jsonify({"Error": "Token is expired"})
+            except jwt.DecodeError:
+                return jsonify({"Error": "Token is invalid"})
+            except Exception as e:
+                return jsonify({"Error": "Verification failed"})
+        else:
+            return jsonify({"Error": "You are not logged in"})
+        return decorated_function
 
 
 def generate_verification_token(user_id):

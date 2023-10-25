@@ -60,13 +60,14 @@ def callback():
         session['email'] = id_info['email']
 
         # Check if the user already exists in the database
-        user = Users.query.filter_by(google_id=session['google_id']).first()
+        user = Users.query.filter_by(email=session['email']).first()
 
         if user is None:
             # Create a new user
-            new_user = Users(google_id=session['google_id'], name=session['name'], email=session['email'])
-            db.session.add(new_user)
+            user = Users(account_id=session['google_id'], name=session['name'], email=session['email'])
+            db.session.add(user)
             db.session.commit()
+            return jsonify({"Success": "New user created"}), 200
 
         session['profile'] = id_info.get('profile')
         
@@ -81,19 +82,25 @@ def callback():
 @auth.route("/logout")
 def logout():
     # Clear the session data
-    session.clear()
+    session.pop('jwt_token', None)
 
     return redirect(url_for('google.index'))
 
 
 @auth.route("/")
 def index():
-    login_link = f"<a href='{url_for('google.login')}'><button>Login</button></a>"
+    google_link = f"<a href='{url_for('google.login')}'><button>Login with google</button></a>"
+    github_link = f"<a href='{url_for('github.github_login')}'><button>Login with github</button></a>"
     protected_link = f"<a href='{url_for('google.protected_area')}'><button>Protected</button></a>"
-    return login_link + "<br>" + protected_link
+    return google_link + "<br>" + github_link + "<br>" + protected_link
 
 @login_is_required
 @auth.route("/protected_area")
-def protected_area(user=None):
+def protected_area():
     jwt_token = session.get('jwt_token')
-    return f"Hello {user.name}, your email address is: {user.email}! JWT Token: {jwt_token}<br><a href='{url_for('google.logout')}'><button>Logout</button></a>"
+    if jwt_token:
+        user_id = verify_verification_token(jwt_token)
+        user = Users.query.filter_by(id=user_id).first()
+        return f"Hello {user.name}, your email address is: {user.email}!<a href='{url_for('google.logout')}'><button>Logout</button></a>"
+    else:
+        return jsonify({"Error": "You are not logged in"})

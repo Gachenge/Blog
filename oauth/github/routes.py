@@ -1,32 +1,29 @@
-from flask import Blueprint, url_for
-from oauth import github
+from flask import Blueprint, redirect, url_for, jsonify, session
+from flask_dance.contrib.github import make_github_blueprint, github
+from oauth.config import App_Config
+from oauth.models.users import Users
+from oauth import db
+from oauth.utils import generate_verification_token
 
 
-gh = Blueprint('github', __name__, url_prefix='/api/github')
+github_bp = make_github_blueprint(client_id=App_Config.GITHUB_OAUTH_CLIENT_ID,
+                                  client_secret=App_Config.GITHUB_OAUTH_CLIENT_SECRET)
 
-@gh.route('/login')
-def login():
-    return github.authorize()
-
-@github.access_token_getter
-def token_getter():
-    user = g.user
-    if user is not None:
-        return user.github_access_token
-
-@gh.route('/github-callback')
-@github.authorized_handler
-def authorized(oauth_token):
-    next_url = request.args.get('next') or url_for('google.index')
-    if oauth_token is None:
-        flash("Authorization failed.")
-        return redirect(next_url)
-
-    user = User.query.filter_by(github_access_token=oauth_token).first()
-    if user is None:
-        user = User(oauth_token)
-        db_session.add(user)
-
-    user.github_access_token = oauth_token
-    db_session.commit()
-    return redirect(next_url)
+@github_bp.route('/') 
+def github_login():
+    if not github.authorized:
+        return redirect(url_for('github.login'))
+    else:
+        account_info = github.get('/user')
+        if account_info.ok:
+            account_info_json = account_info.json()
+            user = Users.query.filter_by(email=account_info_json.get('email')).first()
+            if not user:
+                new_user = Users(account_id=account_info_json['id'], name=account_info_json['name'], email=account_info_json['email'])
+                db.session.add(new_user)
+                db.session.commit()
+                return jsonify({"Success": "New user created"}), 200
+            jwt_token = generate_verification_token(user.id)
+            session['jwt_token'] = jwt_token
+        return redirect(url_for('google.protected_area'))
+    return '<h1>Request failed!</h1>'

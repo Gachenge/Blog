@@ -1,16 +1,15 @@
 from oauth import db
 from oauth.models.base import Basemodel
-from oauth.utils import generate_verification_token
 
 class Users(Basemodel):
-    google_id = db.Column(db.String(50), unique=True, nullable=False)
+    __tablename__ = "users"
+    account_id = db.Column(db.String(50), unique=True, nullable=False)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False, unique=True)
     github_access_token = db.Column(db.String(100))
     
-    def __init__(self, google_id, name, email):
+    def __init__(self, account_id, name, email):
         super().__init__()
-        self.google_id = google_id
+        self.account_id = account_id
         self.name = name
         self.email = email
-        self.github_access_token = github_access_token
