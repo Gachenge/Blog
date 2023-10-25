@@ -1,7 +1,7 @@
 import os
 import pathlib
 import requests
-from flask import Flask, session, abort, redirect, request, Blueprint, jsonify, url_for
+from flask import session, redirect, request, Blueprint, jsonify, url_for
 from google.oauth2 import id_token
 from oauth.config import App_Config
 from google_auth_oauthlib.flow import Flow
@@ -64,17 +64,13 @@ def callback():
     
     # Check if 'google_id', 'name', and 'email' are available in id_info
     if all(key in id_info for key in ['sub', 'name', 'email']):
-        # Set session values
-        session['google_id'] = id_info['sub']
-        session['name'] = id_info['name']
-        session['email'] = id_info['email']
 
         # Check if the user already exists in the database
-        user = Users.query.filter_by(email=session['email']).first()
+        user = Users.query.filter_by(email=id_info['email']).first()
 
         if user is None:
             # Create a new user
-            user = Users(account_id=session['google_id'], name=session['name'], email=session['email'])
+            user = Users(account_id=id_info['sub'], name=id_info['name'], email=id_info['email'], avatar=id_info['picture'])
             db.session.add(user)
             db.session.commit()
             return jsonify({"Success": "New user created"}), 200
@@ -127,6 +123,6 @@ def protected_area():
     if jwt_token:
         user_id = verify_verification_token(jwt_token)
         user = Users.query.filter_by(id=user_id).first()
-        return f"Hello {user.name}, your email address is: {user.email}!<a href='{url_for('google.logout')}'><button>Logout</button></a>"
+        return f"Hello {user.avatar}, {user.name}, your email address is: {user.email}!<a href='{url_for('google.logout')}'><button>Logout</button></a>"
     else:
         return jsonify({"Error": "You are not logged in"})

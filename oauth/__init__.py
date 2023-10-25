@@ -18,10 +18,12 @@ def create_app():
     
     from oauth.google.routes import auth
     from oauth.github.routes import github_bp
+    from oauth.users.routes import users
 
     # Register the blueprint
     app.register_blueprint(auth)
     app.register_blueprint(github_bp, url_prefix='/api/github')
+    app.register_blueprint(users)
 
     # Initialize CORS
     CORS(app, supports_credentials=True)

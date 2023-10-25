@@ -2,6 +2,7 @@ from uuid import uuid4
 from datetime import datetime
 from oauth import db
 from sqlalchemy import Column, Integer, DateTime
+from sqlalchemy.ext.declarative import declarative_base
 
 
 def get_uuid():
@@ -9,15 +10,11 @@ def get_uuid():
     """
     return uuid4().hex
 
+Base = declarative_base()
 class Basemodel(db.Model):
     id = db.Column(db.String(60), primary_key=True, default=get_uuid, unique=True, nullable=False)
     created_at = db.Column(db.DateTime(), default=datetime.utcnow)
     updated_at = db.Column(db.DateTime(), default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    def __init__(self, id, created_at, updated_at):
-        self.id = id
-        self.created_at = created_at
-        self.updated_at = updated_at
         
     @property
     def formatted_created_at(self):
