@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 
 load_dotenv(".env")
 
+
 class App_Config:
     SECRET_KEY = os.environ.get('SECRET_KEY')
     GOOGLE_CLIENT_ID = os.environ.get('CLIENT_ID')

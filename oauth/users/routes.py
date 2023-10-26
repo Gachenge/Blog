@@ -2,11 +2,14 @@ from flask import Blueprint, jsonify, request
 from oauth.utils import login_is_required
 from oauth.models.users import Users
 
-users = Blueprint('users', __name__, url_prefix='/api/user')
+# Rename the 'users' variable to avoid conflicts.
+user_bp = Blueprint('users', __name__, url_prefix='/api/user')
+
 
 @login_is_required
-@users.route("/all")
-def all_user():
+@user_bp.route("/all")
+def all_users():
+    """Returns all users registered."""
     users = Users.query.all()
     user_data = []
     for user in users:
@@ -18,9 +21,11 @@ def all_user():
         user_data.append(user_info)
     return jsonify({"Users": user_data}), 200
 
+
 @login_is_required
-@users.route("/<string:user_id>", methods=['GET', 'PATCH', 'DELETE'])
+@user_bp.route("/<string:user_id>", methods=['GET', 'PATCH', 'DELETE'])
 def user_by_id(user_id):
+    """Allows operations on one user by their id."""
     user = Users.query.filter_by(id=user_id).first()
     if not user:
         return jsonify({"message": "User not found"}), 404
@@ -37,9 +42,14 @@ def user_by_id(user_id):
         data = request.get_json()
         for key, value in data.items():
             if hasattr(user, key):
-                setattr(user, key, value)
+                if key not in ['created_at', 'updated_at', 'id', 'account_id']:
+                    setattr(user, key, value)
+                else:
+                    return jsonify({"Error": f"You are not allowed\
+                                    to change {key}"}), 400
             else:
-                return jsonify({"message": f"Attribute '{key}' is not valid"}), 400
+                return jsonify({"Error": f"Attribute '{key}'\
+                                is not valid"}), 400
 
         db.session.commit()
         return jsonify({"message": "User updated successfully"}), 200

@@ -17,21 +17,10 @@
     "/api/google/login": {
       "get": {
         "summary": "Login with Google",
-        "description": "Redirects to Google login.",
+        "description": "Redirects to Google login. once login details are entered, it redirects to /callback that receved the google authentications and saves the user to database",
         "responses": {
           "302": {
             "description": "Redirect to Google login page"
-          }
-        }
-      }
-    },
-    "/api/google/callback": {
-      "get": {
-        "summary": "Google Callback",
-        "description": "Callback to process Google authorization.",
-        "responses": {
-          "302": {
-            "description": "Redirect to protected area"
           },
           "500": {
             "description": "State does not match"
@@ -84,6 +73,76 @@
         "responses": {
           "302": {
             "description": "Redirect to GitHub login page"
+          }
+        }
+      }
+    },
+    "/api/user/all": {
+      "get": {
+        "summary": "returns a list of all users in the database",
+        "description": "Once a user is authenticated, they are added to the database. This returns a list of all users saved",
+        "responses": {
+          "200": {
+            "description": "returns a list of all users, by id, name and email"
+          }
+        }
+      }
+    },
+    "/api/user/{user_id}": {
+      "get": {
+        "summary": "Returns a specific user by their id",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "returns a specific user by their id"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Allows an update for a user by their id",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "user updated successfully"
+          },
+          "400": {
+            "description": "key is not valid"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Deletes a user by their id",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "user deleted successfully"
           }
         }
       }

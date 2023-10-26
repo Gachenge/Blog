@@ -9,20 +9,23 @@ from pip._vendor import cachecontrol
 import google.auth.transport.requests
 from oauth import db
 from oauth.models.users import Users
-from oauth.utils import login_is_required, generate_verification_token, verify_verification_token
-
+from oauth.utils import (login_is_required, generate_verification_token,
+                         verify_verification_token)
 
 
 GOOGLE_CLIENT_ID = App_Config.GOOGLE_CLIENT_ID
-client_secrets_file = os.path.join(pathlib.Path(__file__).parent, 'client_secret.json')
+client_secrets_file = os.path.join(pathlib.Path(__file__).parent,
+                                   'client_secret.json')
 
 flow = Flow.from_client_secrets_file(
     client_secrets_file=client_secrets_file,
-    scopes=["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"],
+    scopes=["https://www.googleapis.com/auth/userinfo.profile",
+            "https://www.googleapis.com/auth/userinfo.email", "openid"],
     redirect_uri="http://127.0.0.1:5000/api/google/callback"
 )
 
 auth = Blueprint('google', __name__, url_prefix='/api/google')
+
 
 @auth.route("/login")
 def login():
@@ -35,10 +38,12 @@ def login():
     session["state"] = state
     return redirect(authorization_url)
 
+
 @auth.route("/callback")
 def callback():
     """Function to accept authorization token and details from Google.
-    This function handles the callback from Google OAuth. It verifies the authorization token and extracts user details.
+    This function handles the callback from Google OAuth. It verifies
+    the authorization token and extracts user details.
     Returns:
         - If successful, redirects to the protected area.
         - If unsuccessful, returns a JSON response with an error message.
@@ -54,14 +59,15 @@ def callback():
 
     request_session = requests.session()
     cached_session = cachecontrol.CacheControl(request_session)
-    token_request = google.auth.transport.requests.Request(session=cached_session)
+    token_request = google.auth.transport.\
+        requests.Request(session=cached_session)
 
     id_info = id_token.verify_oauth2_token(
         id_token=credentials._id_token,
         request=token_request,
         audience=GOOGLE_CLIENT_ID
     )
-    
+
     # Check if 'google_id', 'name', and 'email' are available in id_info
     if all(key in id_info for key in ['sub', 'name', 'email']):
 
@@ -70,25 +76,28 @@ def callback():
 
         if user is None:
             # Create a new user
-            user = Users(account_id=id_info['sub'], name=id_info['name'], email=id_info['email'], avatar=id_info['picture'])
+            user = Users(account_id=id_info['sub'], name=id_info['name'],
+                         email=id_info['email'], avatar=id_info['picture'])
             db.session.add(user)
             db.session.commit()
             return jsonify({"Success": "New user created"}), 200
 
         session['profile'] = id_info.get('profile')
-        
+
         # Generate a JWT token and store it in the user's session
         jwt_token = generate_verification_token(user.id)
         session['jwt_token'] = jwt_token
-        
+
         return redirect(url_for('google.protected_area'))
     else:
         return jsonify({"Error": "Google user information not available"})
 
+
 @auth.route("/logout")
 def logout():
     """Logout the user by clearing the session data.
-    Clears the user's session data, including the JWT token, to log the user out.
+    Clears the user's session data, including the JWT token,
+    to log the user out.
     Returns:
         Redirects the user to the index page after logging out.
     """
@@ -101,7 +110,8 @@ def logout():
 @auth.route("/")
 def index():
     """Render the index page with login options.
-    Displays buttons to log in with Google and GitHub and access the protected area.
+    Displays buttons to log in with Google and GitHub
+    and access the protected area.
     Returns:
         HTML page with login options.
     """
@@ -110,14 +120,18 @@ def index():
     protected_link = f"<a href='{url_for('google.protected_area')}'><button>Protected</button></a>"
     return google_link + "<br>" + github_link + "<br>" + protected_link
 
+
 @login_is_required
 @auth.route("/protected_area")
 def protected_area():
     """Protected area accessible to logged-in users.
-    Displays the protected area with the user's name and email. Allows the user to log out.
+    Displays the protected area with the user's name
+    and email. Allows the user to log out.
     Returns:
-        - If the user is logged in, displays user details and a logout button.
-        - If the user is not logged in, returns a JSON response with an error message.
+        - If the user is logged in, displays user
+        details and a logout button.
+        - If the user is not logged in, returns a JSON
+        response with an error message.
     """
     jwt_token = session.get('jwt_token')
     if jwt_token:

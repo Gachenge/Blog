@@ -32,6 +32,7 @@ def generate_verification_token(user_id):
     token = s.dumps({'user_id': user_id})
     return token
 
+
 def verify_verification_token(token):
     s = Serializer(App_Config.SECRET_KEY)
 
