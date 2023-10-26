@@ -6,8 +6,8 @@ from oauth.models.users import Users
 user_bp = Blueprint('users', __name__, url_prefix='/api/user')
 
 
-@login_is_required
 @user_bp.route("/all")
+@login_is_required()
 def all_users():
     """Returns all users registered."""
     users = Users.query.all()
@@ -22,8 +22,8 @@ def all_users():
     return jsonify({"Users": user_data}), 200
 
 
-@login_is_required
 @user_bp.route("/<string:user_id>", methods=['GET', 'PATCH', 'DELETE'])
+@login_is_required
 def user_by_id(user_id):
     """Allows operations on one user by their id."""
     user = Users.query.filter_by(id=user_id).first()

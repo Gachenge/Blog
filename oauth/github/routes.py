@@ -3,7 +3,7 @@ from flask_dance.contrib.github import make_github_blueprint, github
 from oauth.config import App_Config
 from oauth.models.users import Users
 from oauth import db
-from oauth.utils import generate_verification_token
+from oauth.utils import generate_verification_token, login_is_required
 
 
 github_bp = make_github_blueprint(client_id=App_Config.GITHUB_OAUTH_CLIENT_ID,
@@ -38,14 +38,15 @@ def github_login():
             user = Users.query.\
                 filter_by(email=account_info_json['email']).first()
             if not user:
-                new_user = Users(account_id=account_info_json['id'],
+                user = Users(account_id=account_info_json['id'],
                                  name=account_info_json['name'],
                                  email=account_info_json['email'],
                                  avatar=account_info_json['avatar_url'])
-                db.session.add(new_user)
+                db.session.add(user)
                 db.session.commit()
                 return jsonify({"Success": "New user created"}), 200
             jwt_token = generate_verification_token(user.id)
-            session['jwt_token'] = jwt_token
+            user.token = jwt_token
+            db.session.commit()
         return redirect(url_for('google.protected_area'))
     return ({"Error": "User not authorised"}), 401
