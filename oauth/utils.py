@@ -17,7 +17,7 @@ def login_is_required(function):
                 try:
                     user_id = verify_verification_token(token)
                     if user_id:
-                        return function(user_id, *args, **kwargs)
+                        return function(*args, **kwargs)
                     else:
                         return jsonify({"error": "Token is invalid"}), 401
                 except jwt.ExpiredSignatureError:

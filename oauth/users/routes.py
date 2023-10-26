@@ -1,13 +1,14 @@
 from flask import Blueprint, jsonify, request
 from oauth.utils import login_is_required
 from oauth.models.users import Users
+from oauth import db
 
 # Rename the 'users' variable to avoid conflicts.
 user_bp = Blueprint('users', __name__, url_prefix='/api/user')
 
 
 @user_bp.route("/all")
-@login_is_required()
+@login_is_required
 def all_users():
     """Returns all users registered."""
     users = Users.query.all()

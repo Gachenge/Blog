@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Swagger  - OpenAPI 3.0",
-    "description": "Allow new users to be authenticated using either google, github or twitter. Then store the user information in mysql databases. No need to remember multiple passwords",
+    "description": "Allow new users to be authenticated using either Google, GitHub, or Twitter. Then store the user information in MySQL databases. No need to remember multiple passwords.",
     "termsOfService": "http://swagger.io/terms/",
     "contact": {
       "email": "gachenge1@gmail.com"
@@ -17,7 +17,7 @@
     "/api/google/login": {
       "get": {
         "summary": "Login with Google",
-        "description": "Redirects to Google login. once login details are entered, it redirects to /callback that receved the google authentications and saves the user to database",
+        "description": "Redirects to Google login. Once login details are entered, it redirects to /callback that receives the Google authentications and saves the user to the database.",
         "responses": {
           "302": {
             "description": "Redirect to Google login page"
@@ -79,11 +79,17 @@
     },
     "/api/user/all": {
       "get": {
-        "summary": "returns a list of all users in the database",
-        "description": "Once a user is authenticated, they are added to the database. This returns a list of all users saved",
+        "summary": "Returns a list of all users in the database",
+        "description": "Once a user is authenticated, they are added to the database. This returns a list of all users saved.",
         "responses": {
           "200": {
-            "description": "returns a list of all users, by id, name and email"
+            "description": "Returns a list of all users, by id, name, and email"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Server error"
           }
         }
       }
@@ -97,34 +103,68 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "integer"
+              "type": "string"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "returns a specific user by their id"
+            "description": "Returns a specific user by their id"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Server error"
           }
         }
       },
       "patch": {
-        "summary": "Allows an update for a user by their id",
+        "summary": "Update a user by their ID",
         "parameters": [
           {
             "name": "user_id",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "integer"
+              "type": "string"
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "avatar": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "user updated successfully"
+            "description": "User updated successfully"
           },
           "400": {
-            "description": "key is not valid"
+            "description": "Invalid data or bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Server error"
           }
         }
       },
@@ -136,13 +176,19 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "integer"
+              "type": "string"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "user deleted successfully"
+            "description": "User deleted successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Server error"
           }
         }
       }
@@ -204,6 +250,11 @@
             "type": "string",
             "format": "string",
             "example": "john@example.com"
+          },
+          "token": {
+            "type": "string",
+            "format": "string",
+            "example": "eyJ1c2VyX2lkIjoiMzhlMTI2MGE0MGJiNDdlNzkyMTY3MTc4NDdiYTYyZjQifQ.ZTqmSQ.s9M0n_ZgwuwMzLo-N--XS0WqXtE"
           },
           "created_at": {
             "type": "string",
