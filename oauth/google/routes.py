@@ -114,6 +114,7 @@ def logout(user_id):
 
     return jsonify({"Success": "You have been logged out"})
 
+
 @auth.route("/")
 def index():
     """Render the index page with login options.
@@ -130,17 +131,22 @@ def index():
 
 @auth.route("/protected_area")
 @login_is_required
-def protected_area(user_id):
+def protected_area():
     """Protected area accessible to logged-in users.
     Displays the protected area with the user's name
     and email. Allows the user to log out.
     Returns:
         - If the user is logged in, displays user
         details and a logout button.
-        - If the user is not logged in or if the user is not found, returns an error message.
+        - If the user is not logged in or if the user is not found,
+        returns an error message.
     """
+    jwt_token = request.headers.get('Authorization')
+    token = jwt_token.split(' ')[1]
+    user_id = verify_verification_token(token)
     user = Users.query.filter_by(id=user_id).first()
     if user:
         return f"Hello {user.avatar}, {user.name}, your email address is: {user.email}!<a href='{url_for('google.logout')}'><button>Logout</button></a>"
     else:
-        return jsonify({"Error": "User not found or you are not logged in"}), 400
+        return jsonify({"Error": "User not found or you are not\
+                        logged in"}), 400

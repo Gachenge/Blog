@@ -39,9 +39,9 @@ def github_login():
                 filter_by(email=account_info_json['email']).first()
             if not user:
                 user = Users(account_id=account_info_json['id'],
-                                 name=account_info_json['name'],
-                                 email=account_info_json['email'],
-                                 avatar=account_info_json['avatar_url'])
+                             name=account_info_json['name'],
+                             email=account_info_json['email'],
+                             avatar=account_info_json['avatar_url'])
                 db.session.add(user)
                 db.session.commit()
                 return jsonify({"Success": "New user created"}), 200
