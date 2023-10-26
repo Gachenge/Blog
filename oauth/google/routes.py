@@ -77,16 +77,17 @@ def callback():
         if user is None:
             # Create a new user
             user = Users(account_id=id_info['sub'], name=id_info['name'],
-                         email=id_info['email'], avatar=id_info['picture'])
+                         email=id_info['email'], avatar=id_info['picture'],
+                         token=None)
             db.session.add(user)
             db.session.commit()
-            return jsonify({"Success": "New user created"}), 200
 
         session['profile'] = id_info.get('profile')
 
         # Generate a JWT token and store it in the user's session
         jwt_token = generate_verification_token(user.id)
-        session['jwt_token'] = jwt_token
+        user.token = jwt_token
+        db.session.commit()
 
         return redirect(url_for('google.protected_area'))
     else:
@@ -94,18 +95,24 @@ def callback():
 
 
 @auth.route("/logout")
-def logout():
+@login_is_required
+def logout(user_id):
     """Logout the user by clearing the session data.
     Clears the user's session data, including the JWT token,
     to log the user out.
     Returns:
         Redirects the user to the index page after logging out.
     """
-    # Clear the session data
-    session.pop('jwt_token', None)
+    # clear session data
+    session.clear()
 
-    return redirect(url_for('google.index'))
+    # remove the token from the user's record
+    user = Users.query.filter_by(id=user_id).first()
+    if user:
+        user.token = None
+        db.session.commit()
 
+    return jsonify({"Success": "You have been logged out"})
 
 @auth.route("/")
 def index():
@@ -121,22 +128,19 @@ def index():
     return google_link + "<br>" + github_link + "<br>" + protected_link
 
 
-@login_is_required
 @auth.route("/protected_area")
-def protected_area():
+@login_is_required
+def protected_area(user_id):
     """Protected area accessible to logged-in users.
     Displays the protected area with the user's name
     and email. Allows the user to log out.
     Returns:
         - If the user is logged in, displays user
         details and a logout button.
-        - If the user is not logged in, returns a JSON
-        response with an error message.
+        - If the user is not logged in or if the user is not found, returns an error message.
     """
-    jwt_token = session.get('jwt_token')
-    if jwt_token:
-        user_id = verify_verification_token(jwt_token)
-        user = Users.query.filter_by(id=user_id).first()
+    user = Users.query.filter_by(id=user_id).first()
+    if user:
         return f"Hello {user.avatar}, {user.name}, your email address is: {user.email}!<a href='{url_for('google.logout')}'><button>Logout</button></a>"
     else:
-        return jsonify({"Error": "You are not logged in"})
+        return jsonify({"Error": "User not found or you are not logged in"}), 400

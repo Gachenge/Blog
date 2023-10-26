@@ -1,27 +1,33 @@
 from functools import wraps
-from flask import session, jsonify
+from flask import session, jsonify, request
 from oauth.config import App_Config
 from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
+import jwt
 
 
 # Wrapper function to make sure the user is logged in
 def login_is_required(function):
     @wraps(function)
     def decorated_function(*args, **kwargs):
-        jwt_token = session.get('jwt_token')
+        jwt_token = request.headers.get('Authorization')
+
         if jwt_token:
-            try:
-                user_id = verify_verification_token(jwt_token)
-                return function(user_id, *args, **kwargs)
-            except jwt.ExpiredSignatureError:
-                return jsonify({"Error": "Token is expired"})
-            except jwt.DecodeError:
-                return jsonify({"Error": "Token is invalid"})
-            except Exception as e:
-                return jsonify({"Error": "Verification failed"})
+            if jwt_token.startswith("Bearer"):
+                token = jwt_token.split(' ')[1]
+                try:
+                    user_id = verify_verification_token(token)
+                    if user_id:
+                        return function(user_id, *args, **kwargs)
+                    else:
+                        return jsonify({"error": "Token is invalid"}), 401
+                except jwt.ExpiredSignatureError:
+                    return jsonify({"error": "Token has expired"}), 401
+                except jwt.DecodeError:
+                    return jsonify({"error": "Token is invalid"}), 401
         else:
-            return jsonify({"Error": "You are not logged in"})
-        return decorated_function
+            return jsonify({"error": "You are not logged in"}), 401
+
+    return decorated_function
 
 
 def generate_verification_token(user_id):

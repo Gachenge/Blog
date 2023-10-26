@@ -40,7 +40,7 @@ def create_app():
 
     @app.route('/swagger.json')
     def swagger():
-        with open('swagger.json', 'r') as f:
+        with open('.swagger.json', 'r') as f:
             return jsonify(json.load(f))
 
     app.register_blueprint(swagerui_blueprint, url_prefix=SWAGGER_URL)
