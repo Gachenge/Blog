@@ -3,14 +3,14 @@ import pathlib
 import requests
 from flask import session, redirect, request, Blueprint, jsonify, url_for
 from google.oauth2 import id_token
-from oauth.config import App_Config
+from blog.config import App_Config
 from google_auth_oauthlib.flow import Flow
 from pip._vendor import cachecontrol
 import google.auth.transport.requests
-from oauth import db
-from oauth.models.users import Users
-from oauth.utils import (login_is_required, generate_verification_token,
-                         verify_verification_token)
+from blog import db
+from blog.models.users import Users
+from blog.utils import (login_is_required, generate_verification_token,
+                         verify_verification_token, get_user)
 
 
 GOOGLE_CLIENT_ID = App_Config.GOOGLE_CLIENT_ID
@@ -141,12 +141,6 @@ def protected_area():
         - If the user is not logged in or if the user is not found,
         returns an error message.
     """
-    jwt_token = request.headers.get('Authorization')
-    token = jwt_token.split(' ')[1]
-    user_id = verify_verification_token(token)
-    user = Users.query.filter_by(id=user_id).first()
-    if user:
-        return f"Hello {user.avatar}, {user.name}, your email address is: {user.email}!<a href='{url_for('google.logout')}'><button>Logout</button></a>"
-    else:
-        return jsonify({"Error": "User not found or you are not\
-                        logged in"}), 400
+    
+    user = get_user()
+    return f"Hello {user.avatar}, {user.name}, your email address is: {user.email}!<a href='{url_for('google.logout')}'><button>Logout</button></a>"

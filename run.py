@@ -1,4 +1,4 @@
-from oauth import create_app, db
+from blog import create_app, db
 
 app = create_app()
 

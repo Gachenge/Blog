@@ -1,6 +1,6 @@
 from functools import wraps
 from flask import session, jsonify, request
-from oauth.config import App_Config
+from blog.config import App_Config
 from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
 import jwt
 
@@ -50,3 +50,20 @@ def verify_verification_token(token):
     except Exception as e:
         # Token is invalid or has expired
         return None
+
+
+def get_user():
+    jwt_token = request.headers.get('Authorization')
+
+    # Verify the token and obtain the user ID
+    user_id = verify_verification_token(jwt_token)
+
+    if user_id is None:
+        return jsonify({"Error": "Invalid or expired token"}), 401
+
+    # Check if the user exists
+    user = Users.query.get(user_id)
+    if not user:
+        return jsonify({"Error": "User not found"}), 404
+
+    return user

@@ -1,9 +1,8 @@
 from flask import Blueprint, jsonify, request
-from oauth.utils import login_is_required
-from oauth.models.users import Users
-from oauth import db
+from blog.utils import login_is_required
+from blog.models.users import Users
+from blog import db
 
-# Rename the 'users' variable to avoid conflicts.
 user_bp = Blueprint('users', __name__, url_prefix='/api/user')
 
 
@@ -41,16 +40,13 @@ def user_by_id(user_id):
 
     if request.method == 'PATCH':
         data = request.get_json()
+        allowed_attributes = ['name', 'email', 'avatar']  # List of allowed attributes to update
+
         for key, value in data.items():
-            if hasattr(user, key):
-                if key not in ['created_at', 'updated_at', 'id', 'account_id']:
-                    setattr(user, key, value)
-                else:
-                    return jsonify({"Error": f"You are not allowed\
-                                    to change {key}"}), 400
+            if key in allowed_attributes:
+                setattr(post, key, value)
             else:
-                return jsonify({"Error": f"Attribute '{key}'\
-                                is not valid"}), 400
+                return jsonify({"Error": f"You are not allowed to change '{key}'"}), 400
 
         db.session.commit()
         return jsonify({"message": "User updated successfully"}), 200

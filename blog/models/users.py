@@ -1,5 +1,5 @@
-from oauth import db
-from oauth.models.base import Basemodel, Base
+from blog import db
+from blog.models.base import Basemodel, Base
 
 
 class Users(Basemodel, Base):

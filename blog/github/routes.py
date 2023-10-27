@@ -1,9 +1,9 @@
 from flask import Blueprint, redirect, url_for, jsonify, session
 from flask_dance.contrib.github import make_github_blueprint, github
-from oauth.config import App_Config
-from oauth.models.users import Users
-from oauth import db
-from oauth.utils import generate_verification_token, login_is_required
+from blog.config import App_Config
+from blog.models.users import Users
+from blog import db
+from blog.utils import generate_verification_token, login_is_required
 
 
 github_bp = make_github_blueprint(client_id=App_Config.GITHUB_OAUTH_CLIENT_ID,
