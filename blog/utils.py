@@ -13,7 +13,7 @@ def login_is_required(function):
         jwt_token = request.headers.get('Authorization')
 
         if jwt_token:
-            if jwt_token.startswith("Bearer"):
+            if jwt_token.startswith("Bearer "):
                 token = jwt_token.split(' ')[1]
                 try:
                     user_id = verify_verification_token(token)
@@ -59,7 +59,7 @@ def get_user():
     if not jwt_token:
         return jsonify({"Error": "Token is missing"}), 401
 
-    if jwt_token.startswith("Bearer"):
+    if jwt_token.startswith("Bearer "):
         token = jwt_token.split(' ')[1]
         user_id = verify_verification_token(token)
 

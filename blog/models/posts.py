@@ -9,9 +9,9 @@ class Posts(Basemodel, Base):
 
     user_id = db.Column(db.String(60), db.ForeignKey('users.id'), nullable=False)
     body = db.Column(db.String(1000), nullable=False)
-    image_url = db.Column(db.String(255))  # Add a field to store the image URL
+    image_url = db.Column(db.String(255))
 
-    user = relationship("Users")  # Define a relationship to the User model
+    user = relationship("Users")
 
     def __init__(self, user_id, body, image_url):
         super().__init__()
