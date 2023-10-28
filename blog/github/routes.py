@@ -41,10 +41,10 @@ def github_login():
                 user = Users(account_id=account_info_json['id'],
                              name=account_info_json['name'],
                              email=account_info_json['email'],
-                             avatar=account_info_json['avatar_url'])
+                             avatar=account_info_json['avatar_url'],
+                             token=None)
                 db.session.add(user)
                 db.session.commit()
-                return jsonify({"Success": "New user created"}), 200
             jwt_token = generate_verification_token(user.id)
             user.token = jwt_token
             db.session.commit()

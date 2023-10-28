@@ -3,6 +3,7 @@ from flask import session, jsonify, request
 from blog.config import App_Config
 from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
 import jwt
+from blog.models.users import Users
 
 
 # Wrapper function to make sure the user is logged in
@@ -55,15 +56,17 @@ def verify_verification_token(token):
 def get_user():
     jwt_token = request.headers.get('Authorization')
 
-    # Verify the token and obtain the user ID
-    user_id = verify_verification_token(jwt_token)
+    if not jwt_token:
+        return jsonify({"Error": "Token is missing"}), 401
 
-    if user_id is None:
+    if jwt_token.startswith("Bearer"):
+        token = jwt_token.split(' ')[1]
+        user_id = verify_verification_token(token)
+
+        if user_id:
+            user = Users.query.get(user_id)
+            if not user:
+                return jsonify({"Error": "User not found"}), 404
+            return user
+
         return jsonify({"Error": "Invalid or expired token"}), 401
-
-    # Check if the user exists
-    user = Users.query.get(user_id)
-    if not user:
-        return jsonify({"Error": "User not found"}), 404
-
-    return user

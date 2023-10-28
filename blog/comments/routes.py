@@ -71,4 +71,3 @@ def create_comment(post_id):
     db.session.add(comment)
     db.session.commit()
     return jsonify({"message": "Comment made successfully"}), 200
-    

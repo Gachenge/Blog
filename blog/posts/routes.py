@@ -47,6 +47,24 @@ def user_posts(user_id):
 
     return jsonify({"Posts": post_data})
 
+@posts_bp.route("/myposts")
+@login_is_required
+def getAllMyPosts():
+    user = get_user()
+    posts = Posts.query.filter_by(user_id=user.id).all()  # Filter posts by user_id
+
+    post_data = []
+
+    for post in posts:
+        post_info = {
+            "Author": user.name,
+            "Body": post.body,
+            "Image": post.image_url
+        }
+        post_data.append(post_info)
+
+    return jsonify({"Posts": post_data})
+
 
 @posts_bp.route("/<string:post_id>", methods=['GET', 'PATCH', 'DELETE'])
 @login_is_required
@@ -103,4 +121,3 @@ def create_post():
     db.session.commit()
 
     return jsonify({"Message": "Post created successfully"}), 200
-
