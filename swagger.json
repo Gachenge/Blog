@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Swagger  - OpenAPI 3.0",
-    "description": "Allow new users to be authenticated using either Google, GitHub, or Twitter. Then store the user information in MySQL databases. No need to remember multiple passwords.",
+    "description": "Allow new users to be authenticated using either google, github or twitter. Then store the user information in mysql databases. No need to remember multiple passwords",
     "termsOfService": "http://swagger.io/terms/",
     "contact": {
       "email": "gachenge1@gmail.com"
@@ -17,7 +17,7 @@
     "/api/google/login": {
       "get": {
         "summary": "Login with Google",
-        "description": "Redirects to Google login. Once login details are entered, it redirects to /callback that receives the Google authentications and saves the user to the database.",
+        "description": "Redirects to Google login. once login details are entered, it redirects to /callback that receved the google authentications and saves the user to database",
         "responses": {
           "302": {
             "description": "Redirect to Google login page"
@@ -57,19 +57,8 @@
         "responses": {
           "200": {
             "description": "OK"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "500": {
-            "description": "Server error"
           }
-        },
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ]
+        }
       }
     },
     "/api/github": {
@@ -85,17 +74,11 @@
     },
     "/api/user/all": {
       "get": {
-        "summary": "Returns a list of all users in the database",
-        "description": "Once a user is authenticated, they are added to the database. This returns a list of all users saved.",
+        "summary": "returns a list of all users in the database",
+        "description": "Once a user is authenticated, they are added to the database. This returns a list of all users saved",
         "responses": {
           "200": {
-            "description": "Returns a list of all users, by id, name, and email"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "500": {
-            "description": "Server error"
+            "description": "returns a list of all users, by id, name and email"
           }
         }
       }
@@ -115,18 +98,12 @@
         ],
         "responses": {
           "200": {
-            "description": "Returns a specific user by their id"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "500": {
-            "description": "Server error"
+            "description": "returns a specific user by their id"
           }
         }
       },
       "patch": {
-        "summary": "Update a user by their ID",
+        "summary": "Allows an update for a user by their id",
         "parameters": [
           {
             "name": "user_id",
@@ -145,14 +122,16 @@
                 "type": "object",
                 "properties": {
                   "name": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "The name of the user"
                   },
                   "email": {
                     "type": "string",
-                    "format": "email"
+                    "description": "user email"
                   },
                   "avatar": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "url of new image"
                   }
                 }
               }
@@ -161,16 +140,10 @@
         },
         "responses": {
           "200": {
-            "description": "User updated successfully"
+            "description": "user updated successfully"
           },
           "400": {
-            "description": "Invalid data or bad request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "500": {
-            "description": "Server error"
+            "description": "key is not valid"
           }
         }
       },
@@ -188,15 +161,346 @@
         ],
         "responses": {
           "200": {
-            "description": "User deleted successfully"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "500": {
-            "description": "Server error"
+            "description": "user deleted successfully"
           }
         }
+      }
+    },
+    "/api/posts/create": {
+      "post": {
+        "summary": "create a blog post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "body": {
+                    "type": "string",
+                    "description": "The content of the post"
+                  },
+                  "image_url": {
+                    "type": "string",
+                    "description": "URL of an image associated with the post"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "post created successfully"
+          },
+          "400": {
+            "description": "post must have a body"
+          }
+        }
+      }
+    },
+    "/api/posts/{post_id}": {
+      "get": {
+        "summary": "Returns a particular post by id",
+        "parameters": [
+          {
+            "name": "post_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "get a particular user by id"
+          },
+          "404": {
+            "description": "post not found"
+          }
+        }
+      },
+      "patch": {
+        "summary": "update details for a post",
+        "parameters": [
+          {
+            "name": "post_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "body": {
+                    "type": "string",
+                    "description": "The content of the post"
+                  },
+                  "image_url": {
+                    "type": "string",
+                    "description": "URL of an image associated with the post"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "post updated successfully"
+          },
+          "400": {
+            "description": "key is not valid"
+          },
+          "404": {
+            "description": "post not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "delete a post",
+        "description": "get a post by id and delete it",
+        "parameters": [
+          {
+            "name": "post_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "post deleted successfully"
+          },
+          "404": {
+            "description": "post not found"
+          }
+        }
+      }
+    },
+    "/api/posts/all": {
+      "get": {
+        "summary": "return a list of all posts",
+        "description": "get all blog posts",
+        "responses": {
+          "200": {
+            "description": "successfull response"
+          }
+        }
+      }
+    },
+    "/api/posts/user/{user_id}": {
+      "get": {
+        "summary": "all user by a particular user",
+        "description": "get every post a user has",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful response"
+          },
+          "404": {
+            "description": "user not found"
+          }
+        }
+      }
+    },
+    "/api/posts/myposts": {
+      "get": {
+        "summary": "all posts by the current user",
+        "description": "returns a list of all my posts",
+        "responses": {
+          "200": {
+            "description": "successfull response"
+          }
+        }
+      }
+    },
+    "/api/posts/{post_id}/comments": {
+      "get": {
+        "summary": "get a comment on a particular post",
+        "description": "get all comments on a post",
+        "parameters": [
+          {
+            "name": "post_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful response"
+          }
+        }
+      },
+      "post": {
+        "summary": "make a comment on a post",
+        "description": "create a comment on a particular post",
+        "parameters": [
+          {
+            "name": "post_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "description": "The content of the post"
+                  },
+                  "image_url": {
+                    "type": "string",
+                    "description": "URL of an image associated with the post"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "successful response"
+          },
+          "400": {
+            "description": "a comment must have a text"
+          }
+        }
+      }
+    },
+    "/api/comments/{comment_id}": {
+      "get": {
+        "summary": "get a particular comment by id",
+        "description": "return a particular comment",
+        "parameters": [
+          {
+            "name": "comment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful response"
+          },
+          "404": {
+            "description": "comment not found"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update a comment by ID",
+        "description": "Update a comment by ID",
+        "parameters": [
+          {
+            "name": "comment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "description": "The updated comment text"
+                  },
+                  "image": {
+                    "type": "string",
+                    "description": "URL of an updated image associated with the comment"
+                  }
+                },
+                "example": {
+                  "text": "Updated comment text",
+                  "image": "https://example.com/updated_image.jpg"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Comment updated successfully"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "403": {
+            "description": "You are not allowed to change a key"
+          },
+          "404": {
+            "description": "Comment not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "delete a comment by id",
+        "description": "geta comment by id and delete it",
+        "parameters": [
+          {
+            "name": "comment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful response"
+          },
+          "404": {
+            "description": "comment not found"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
       }
     }
   },
@@ -205,75 +509,120 @@
       "BearerAuth": []
     }
   ],
-  "components": {
-    "securitySchemes": {
-      "BearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT"
+  "schemas": {
+    "Basemodel": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier of the model"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of when the model was created"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of when the model was last updated"
+        },
+        "formatted_created_at": {
+          "type": "string",
+          "description": "Formatted created timestamp"
+        },
+        "formatted_updated_at": {
+          "type": "string",
+          "description": "Formatted updated timestamp"
+        }
       }
     },
-    "schemas": {
-      "Base": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "example": "32b3a275-fd39-4c70-a777-5fbcca050426"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "example": "2023-10-26T15:30:45Z"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time",
-            "example": "2023-10-26T15:30:45Z"
+    "Comment": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": null
+        },
+        {
+          "type": "object",
+          "properties": {
+            "user_id": {
+              "type": "string",
+              "description": "User ID who made the comment"
+            },
+            "post_id": {
+              "type": "string",
+              "description": "ID of the post associated with the comment"
+            },
+            "text": {
+              "type": "string",
+              "description": "Comment text"
+            },
+            "image_url": {
+              "type": "string",
+              "description": "URL of an image associated with the comment"
+            }
           }
         }
-      },
-      "User": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "example": "32b3a275-fd39-4c70-a777-5fbcca050426"
-          },
-          "account_id": {
-            "type": "integer",
-            "format": "integer",
-            "example": 12345678
-          },
-          "name": {
-            "type": "string",
-            "format": "string",
-            "example": "John"
-          },
-          "email": {
-            "type": "string",
-            "format": "string",
-            "example": "john@example.com"
-          },
-          "token": {
-            "type": "string",
-            "format": "string",
-            "example": "eyJ1c2VyX2lkIjoiMzhlMTI2MGE0MGJiNDdlNzkyMTY3MTc4NDdiYTYyZjQifQ.ZTqmSQ.s9M0n_ZgwuwMzLo-N--XS0WqXtE"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "strftime('%Y-%m-%d %H:%M:%S')",
-            "example": "2023-10-26T15:30:45.000Z"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "strftime('%Y-%m-%d %H:%M:%S')",
-            "example": "2023-10-26T15:30:45.000Z"
+      ]
+    },
+    "Post": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": null
+        },
+        {
+          "type": "object",
+          "properties": {
+            "user_id": {
+              "type": "string",
+              "description": "User ID who made the post"
+            },
+            "body": {
+              "type": "string",
+              "description": "Post content"
+            },
+            "image_url": {
+              "type": "string",
+              "description": "URL of an image associated with the post"
+            }
           }
         }
-      }
+      ]
+    },
+    "User": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": null
+        },
+        {
+          "type": "object",
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "description": "User's account ID"
+            },
+            "name": {
+              "type": "string",
+              "description": "User's name"
+            },
+            "email": {
+              "type": "string",
+              "description": "User's email address"
+            },
+            "avatar": {
+              "type": "string",
+              "description": "URL of the user's avatar image"
+            },
+            "token": {
+              "type": "string",
+              "description": "User's authentication token"
+            }
+          }
+        }
+      ]
     }
   }
 }

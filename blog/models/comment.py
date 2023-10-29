@@ -15,7 +15,7 @@ class Comment(Basemodel, Base):
     post = relationship("Posts")  # Define a relationship to the Post model
 
     def __init__(self, user_id, post_id, text, image_url):
-        super().__init()
+        super().__init__()
         self.user_id = user_id
         self.post_id = post_id
         self.text = text

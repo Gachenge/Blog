@@ -3,6 +3,7 @@ from blog.utils import login_is_required, get_user
 from blog import db
 from blog.models.posts import Posts
 from blog.models.users import Users
+from blog.models.comment import Comment
 
 posts_bp = Blueprint('posts', __name__, url_prefix='/api/posts')
 
@@ -15,10 +16,13 @@ def all_posts():
 
     for post in posts:
         user = Users.query.get(post.user_id)
+        comments = Comment.query.filter_by(post_id=post.id).all()
+        serialised = [serialise_comment(comment) for comment in comments]
         post_info = {
             "Author": user.name,
             "Body": post.body,
-            "Image": post.image_url
+            "Image": post.image_url,
+            "Comments": serialised
         }
         post_data.append(post_info)
 
@@ -38,10 +42,13 @@ def user_posts(user_id):
     post_data = []
 
     for post in posts:
+        comments = Comment.query.filter_by(post_id=post.id).all()
+        serialised = [serialise_comment(comment) for comment in comments]
         post_info = {
             "Author": user.name,
             "Body": post.body,
-            "Image": post.image_url
+            "Image": post.image_url,
+            "Comments": serialised
         }
         post_data.append(post_info)
 
@@ -56,10 +63,14 @@ def getAllMyPosts():
     post_data = []
 
     for post in posts:
+        comments = Comment.query.filter_by(post_id=post.id).all()
+        serialised = [serialise_comment(comment) for comment in comments]
+
         post_info = {
             "Author": user.name,
             "Body": post.body,
-            "Image": post.image_url
+            "Image": post.image_url,
+            "Comments": serialised
         }
         post_data.append(post_info)
 
@@ -74,12 +85,15 @@ def post_by_id(post_id):
         return jsonify({"message": "Post not found"}), 404
 
     user = Users.query.get(post.user_id)
+    comments = Comment.query.filter_by(post_id=post.id).all()
+    serialised = [serialise_comment(comment) for comment in comments]
 
     if request.method == 'GET':
         post_info = {
             "Author": user.name,
             "Post": post.body,
-            "Image": post.image_url
+            "Image": post.image_url,
+            "Comments": serialised
         }
         return jsonify({"Post": post_info})
 
@@ -121,3 +135,41 @@ def create_post():
     db.session.commit()
 
     return jsonify({"Message": "Post created successfully"}), 200
+
+
+@posts_bp.route('/<string:post_id>/comments', methods=['GET', 'POST'])
+@login_is_required
+def post_comments(post_id):
+    if request.method == 'GET':
+        comments = Comment.query.filter_by(post_id=post_id).all()
+        comment_data = []
+        for comment in comments:
+            user = Users.query.get(comment.user_id)
+            comment_info = {
+                "Author": user.name,
+                "user_image": user.avatar,
+                "comment": comment.text,
+            }
+            comment_data.append(comment_info)
+        return jsonify({"Comments": comment_data})
+
+    if request.method == 'POST':
+        data = request.get_json()
+        if 'text' not in data or data['text'] is None or data['text'] == "":
+            return jsonify({"Error": "A comment must have a text"}), 400
+
+        user = get_user()
+        
+        comment = Comment(user_id=user.id, post_id=post_id, image_url=data.get('image'), text=data['text'])
+        db.session.add(comment)
+        db.session.commit()
+        return jsonify({"message": "Comment made successfully"}), 200    
+
+
+def serialise_comment(comment):
+    user = Users.query.get(comment.user_id)
+    return {
+        "Author": user.name,
+        "Text": comment.text,
+        "image": comment.image_url
+    }
