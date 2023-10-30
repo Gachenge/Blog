@@ -96,21 +96,22 @@ def callback():
 
 @auth.route("/logout")
 @login_is_required
-def logout(user_id):
+def logout():
     """Logout the user by clearing the session data.
     Clears the user's session data, including the JWT token,
     to log the user out.
     Returns:
         Redirects the user to the index page after logging out.
     """
-    # clear session data
-    session.clear()
 
     # remove the token from the user's record
-    user = Users.query.filter_by(id=user_id).first()
+    user = get_user()
     if user:
         user.token = None
         db.session.commit()
+
+    # clear session data
+    session.clear()
 
     return jsonify({"Success": "You have been logged out"})
 
