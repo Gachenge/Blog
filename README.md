@@ -2,7 +2,7 @@
 
 ## Description
 
-Allow new users to be authenticated using either Google, GitHub, or Twitter. Then store the user information in MySQL databases. No need to remember multiple passwords.
+Blog App that allows users to post blogs, comment on posts, upload images with the post or comments. Users need to be logged in to upload posts or comments. Users can be authenticated either using google or github.
 
 ## Table of Contents
 
